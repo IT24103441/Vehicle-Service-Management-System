@@ -1,32 +1,106 @@
+using System.Text;
 using JobMaintenanceService.Data;
+using JobMaintenanceService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("ConnectionStrings:DefaultConnection is missing.");
+
 builder.Services.AddDbContext<JobMaintenanceDbContext>(options =>
-    options.UseMySQL(
-        builder.Configuration.GetConnectionString("DefaultConnection")!
-    )
-);
+    options.UseMySQL(connectionString));
 
-// Add services to the container.
+builder.Services.AddScoped<IJobCardService, JobCardService>();
+builder.Services.AddScoped<IMechanicAssignmentService, MechanicAssignmentService>();
+builder.Services.AddScoped<IRepairTaskService, RepairTaskService>();
+builder.Services.AddScoped<IRepairNoteService, RepairNoteService>();
+builder.Services.AddScoped<IJobStatusService, JobStatusService>();
+builder.Services.AddScoped<IActiveJobsReportService, ActiveJobsReportService>();
+builder.Services.AddScoped<IInspectionService, InspectionService>();
+builder.Services.AddHttpClient("CustomerBookingService");
+builder.Services.AddHostedService<VehicleCheckedInConsumer>();
 
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("Jwt:Key is missing.");
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        // .NET 10 JwtBearer defaults to JsonWebTokenHandler which has different
+        // key resolution. UseSecurityTokenValidators = true restores the legacy
+        // JwtSecurityTokenHandler that correctly reads IssuerSigningKey.
+        options.UseSecurityTokenValidators = true;
+
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = signingKey,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactFrontend", policy =>
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.MapOpenApi();
+    var db = scope.ServiceProvider.GetRequiredService<JobMaintenanceDbContext>();
+    try
+    {
+        await db.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS `JobStatusHistories` (
+                `Id` int NOT NULL AUTO_INCREMENT,
+                `JobCardId` int NOT NULL,
+                `FromStatus` varchar(30) NOT NULL,
+                `ToStatus` varchar(30) NOT NULL,
+                `ChangedBy` varchar(100) NOT NULL,
+                `ChangedByRole` varchar(30) NOT NULL,
+                `ChangedAt` datetime(6) NOT NULL,
+                PRIMARY KEY (`Id`),
+                KEY `IX_JobStatusHistories_JobCardId_ChangedAt` (`JobCardId`, `ChangedAt`)
+            );");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error ensuring JobStatusHistories table: {ex.Message}");
+    }
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+    app.MapOpenApi();
 
+// app.UseHttpsRedirection(); // Disabled for HTTP development — HTTPS redirect strips the Authorization header
+app.UseCors("AllowReactFrontend");
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

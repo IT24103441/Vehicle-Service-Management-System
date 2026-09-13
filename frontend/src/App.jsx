@@ -7,6 +7,7 @@ import {
 import './App.css'
 
 import ProtectedRoute from './components/ProtectedRoute'
+import { getRole, isAuthenticated } from './services/api'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
@@ -18,17 +19,93 @@ import BookingsPage from './pages/BookingsPage'
 import CreateBookingPage from './pages/CreateBookingPage'
 import BookingDetailsPage from './pages/BookingDetailsPage'
 import EditBookingPage from './pages/EditBookingPage'
+import VehicleCheckInPage from './pages/VehicleCheckInPage'
+import JobCardsPage from './pages/JobCardsPage'
+import MechanicAssignmentsPage from './pages/MechanicAssignmentsPage'
+import MyAssignedJobsPage from './pages/MyAssignedJobsPage'
+import InspectionPage from './pages/InspectionPage'
+import CompletedInspectionsPage from './pages/CompletedInspectionsPage'
+import RepairTasksPage from './pages/RepairTasksPage'
+import JobStatusPage from './pages/JobStatusPage'
+import ServiceAdvisor from './pages/ServiceAdvisor'
+import EditServiceAdvisorProfilePage from './pages/EditServiceAdvisorProfilePage'
+import MechanicPage from './pages/MechanicPage'
+import EditMechanicProfilePage from './pages/EditMechanicProfilePage'
+import AdministratorPage from './pages/AdministratorPage'
+import ActiveJobsDashboardPage from './pages/ActiveJobsDashboardPage'
+
+function HomeRedirect() {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />
+  }
+
+  const role = getRole()
+  if (role === 'Administrator') {
+    return <Navigate to="/admin" replace />
+  }
+
+  if (role === 'ServiceAdvisor' || role === 'Staff') {
+    return <Navigate to="/service-advisor" replace />
+  }
+
+  if (role === 'Mechanic') {
+    return <Navigate to="/mechanic" replace />
+  }
+
+  return <Navigate to="/profile" replace />
+}
 
 function App() {
   return (
     <Routes>
       <Route
         path="/"
+        element={<HomeRedirect />}
+      />
+
+      <Route
+        path="/admin"
         element={
-          <Navigate
-            to="/login"
-            replace
-          />
+          <ProtectedRoute>
+            <AdministratorPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/service-advisor"
+        element={
+          <ProtectedRoute>
+            <ServiceAdvisor />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/service-advisor/profile/edit"
+        element={
+          <ProtectedRoute>
+            <EditServiceAdvisorProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mechanic"
+        element={
+          <ProtectedRoute>
+            <MechanicPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mechanic/profile/edit"
+        element={
+          <ProtectedRoute>
+            <EditMechanicProfilePage />
+          </ProtectedRoute>
         }
       />
 
@@ -56,6 +133,84 @@ function App() {
         element={
           <ProtectedRoute>
             <EditProfilePage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/service-advisor/check-in"
+        element={
+          <ProtectedRoute>
+            <VehicleCheckInPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/service-advisor/job-cards"
+        element={
+          <ProtectedRoute>
+            <JobCardsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/service-advisor/mechanic-assignments"
+        element={
+          <ProtectedRoute>
+            <MechanicAssignmentsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mechanic/inspections/:jobCardId"
+        element={
+          <ProtectedRoute>
+            <InspectionPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mechanic/repairs/:jobCardId"
+        element={
+          <ProtectedRoute>
+            <RepairTasksPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/jobs/:jobCardId/status"
+        element={
+          <ProtectedRoute>
+            <JobStatusPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/reports/active-jobs"
+        element={<ActiveJobsDashboardPage />}
+      />
+
+      <Route
+        path="/service-advisor/completed-inspections"
+        element={
+          <ProtectedRoute>
+            <CompletedInspectionsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mechanic/my-jobs"
+        element={
+          <ProtectedRoute>
+            <MyAssignedJobsPage />
           </ProtectedRoute>
         }
       />

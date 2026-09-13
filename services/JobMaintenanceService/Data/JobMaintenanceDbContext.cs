@@ -1,13 +1,97 @@
+using JobMaintenanceService.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace JobMaintenanceService.Data
+namespace JobMaintenanceService.Data;
+
+public class JobMaintenanceDbContext : DbContext
 {
-    public class JobMaintenanceDbContext : DbContext
+    public JobMaintenanceDbContext(DbContextOptions<JobMaintenanceDbContext> options)
+        : base(options)
     {
-        public JobMaintenanceDbContext(
-            DbContextOptions<JobMaintenanceDbContext> options)
-            : base(options)
+    }
+
+    public DbSet<JobCard> JobCards => Set<JobCard>();
+    public DbSet<ProcessedKafkaEvent> ProcessedKafkaEvents => Set<ProcessedKafkaEvent>();
+    public DbSet<MechanicAssignment> MechanicAssignments => Set<MechanicAssignment>();
+    public DbSet<RepairTask> RepairTasks => Set<RepairTask>();
+    public DbSet<RepairNote> RepairNotes => Set<RepairNote>();
+    public DbSet<Inspection> Inspections => Set<Inspection>();
+    public DbSet<JobStatusHistory> JobStatusHistories => Set<JobStatusHistory>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<JobCard>(entity =>
         {
-        }
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.JobCardNumber).IsRequired().HasMaxLength(30);
+            entity.Property(x => x.VehicleRegistrationNumber).IsRequired().HasMaxLength(30);
+            entity.Property(x => x.ReportedProblems).IsRequired().HasMaxLength(500);
+            entity.Property(x => x.Status).IsRequired().HasMaxLength(30);
+
+            entity.HasIndex(x => x.JobCardNumber).IsUnique();
+            entity.HasIndex(x => x.Status);
+            entity.HasIndex(x => x.CheckInId).IsUnique();
+        });
+
+        modelBuilder.Entity<MechanicAssignment>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MechanicId).IsRequired().HasMaxLength(100);
+            entity.Property(x => x.MechanicName).IsRequired().HasMaxLength(150);
+            entity.Property(x => x.AssignedBy).IsRequired().HasMaxLength(100);
+            entity.HasIndex(x => new { x.JobCardId, x.IsActive });
+        });
+
+        modelBuilder.Entity<Inspection>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MechanicId).IsRequired().HasMaxLength(100);
+            entity.Property(x => x.MechanicName).IsRequired().HasMaxLength(150);
+            entity.Property(x => x.InspectionResults).IsRequired().HasMaxLength(2000);
+            entity.Property(x => x.IdentifiedProblems).IsRequired().HasMaxLength(2000);
+            entity.HasIndex(x => x.JobCardId).IsUnique();
+            entity.HasIndex(x => x.MechanicId);
+        });
+
+        modelBuilder.Entity<RepairTask>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MechanicId).IsRequired().HasMaxLength(100);
+            entity.Property(x => x.MechanicName).IsRequired().HasMaxLength(150);
+            entity.Property(x => x.TaskTitle).IsRequired().HasMaxLength(200);
+            entity.Property(x => x.TaskDescription).IsRequired().HasMaxLength(1000);
+            entity.HasIndex(x => x.JobCardId);
+            entity.HasIndex(x => x.MechanicId);
+        });
+
+        modelBuilder.Entity<RepairNote>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.MechanicId).IsRequired().HasMaxLength(100);
+            entity.Property(x => x.MechanicName).IsRequired().HasMaxLength(150);
+            entity.Property(x => x.Note).IsRequired().HasMaxLength(2000);
+            entity.HasIndex(x => x.JobCardId);
+            entity.HasIndex(x => x.MechanicId);
+        });
+
+        modelBuilder.Entity<JobStatusHistory>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.FromStatus).IsRequired().HasMaxLength(30);
+            entity.Property(x => x.ToStatus).IsRequired().HasMaxLength(30);
+            entity.Property(x => x.ChangedBy).IsRequired().HasMaxLength(100);
+            entity.Property(x => x.ChangedByRole).IsRequired().HasMaxLength(30);
+            entity.HasIndex(x => new { x.JobCardId, x.ChangedAt });
+        });
+
+        modelBuilder.Entity<ProcessedKafkaEvent>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.EventId).IsRequired();
+            entity.Property(x => x.EventType).IsRequired().HasMaxLength(100);
+            entity.HasIndex(x => x.EventId).IsUnique();
+        });
     }
 }

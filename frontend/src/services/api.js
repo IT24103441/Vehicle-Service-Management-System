@@ -1,26 +1,36 @@
-const API_BASE_URL =
+const CUSTOMER_BOOKING_API =
   import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5000'
+  'http://localhost:5001'
+
+const JOB_MAINTENANCE_API =
+  import.meta.env.VITE_JOB_MAINTENANCE_API_BASE_URL ||
+  'http://localhost:5002'
+
 
 export function getToken() {
   return localStorage.getItem('token')
 }
 
+
 export function saveAuth(authResponse) {
   localStorage.setItem('token', authResponse.token)
+
   localStorage.setItem(
     'userId',
     authResponse.userId,
   )
+
   localStorage.setItem(
     'email',
     authResponse.email,
   )
+
   localStorage.setItem(
     'role',
     authResponse.role,
   )
 }
+
 
 export function clearAuth() {
   localStorage.removeItem('token')
@@ -29,10 +39,19 @@ export function clearAuth() {
   localStorage.removeItem('role')
 }
 
+
 export function isAuthenticated() {
   return Boolean(getToken())
 }
 
+export function getRole() {
+  return localStorage.getItem('role') || ''
+}
+
+
+/*
+ * Generic request for CustomerBookingService
+ */
 async function request(path, options = {}) {
   const token = getToken()
 
@@ -46,7 +65,7 @@ async function request(path, options = {}) {
   }
 
   const response = await fetch(
-    `${API_BASE_URL}${path}`,
+    `${CUSTOMER_BOOKING_API}${path}`,
     {
       ...options,
       headers,
@@ -58,11 +77,14 @@ async function request(path, options = {}) {
     .catch(() => null)
 
   if (!response.ok) {
-    const error = new Error(
+    const errorMsg =
       data?.message ||
-        'Something went wrong while contacting the server.',
-    )
+      data?.detail ||
+      data?.title ||
+      (typeof data === 'string' ? data : null) ||
+      `Request failed with status ${response.status}`
 
+    const error = new Error(errorMsg)
     error.status = response.status
     error.data = data
 
@@ -72,13 +94,66 @@ async function request(path, options = {}) {
   return data
 }
 
+
+/*
+ * Generic request for JobMaintenanceService
+ */
+async function jobMaintenanceRequest(path, options = {}) {
+  const token = getToken()
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  const response = await fetch(
+    `${JOB_MAINTENANCE_API}${path}`,
+    {
+      ...options,
+      headers,
+    },
+  )
+
+  const data = await response
+    .json()
+    .catch(() => null)
+
+  if (!response.ok) {
+    const errorMsg =
+      data?.message ||
+      data?.detail ||
+      data?.title ||
+      (typeof data === 'string' ? data : null) ||
+      `Request failed with status ${response.status}`
+
+    const error = new Error(errorMsg)
+    error.status = response.status
+    error.data = data
+
+    throw error
+  }
+
+  return data
+}
+
+
+/* =========================================================
+   AUTH API
+   CustomerBookingService
+   ========================================================= */
+
 export const authApi = {
-  register(email, password) {
+  register(email, password, role = 'Customer') {
     return request('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({
         email,
         password,
+        role,
       }),
     })
   },
@@ -104,6 +179,12 @@ export const authApi = {
   },
 }
 
+
+/* =========================================================
+   CUSTOMER API
+   CustomerBookingService
+   ========================================================= */
+
 export const customerApi = {
   getMyProfile() {
     return request('/api/customers/me')
@@ -123,6 +204,12 @@ export const customerApi = {
     })
   },
 }
+
+
+/* =========================================================
+   VEHICLE API
+   CustomerBookingService
+   ========================================================= */
 
 export const vehicleApi = {
   getMyVehicles() {
@@ -147,6 +234,12 @@ export const vehicleApi = {
     })
   },
 }
+
+
+/* =========================================================
+   BOOKING API
+   CustomerBookingService
+   ========================================================= */
 
 export const bookingApi = {
   getMyBookings() {
@@ -176,4 +269,257 @@ export const bookingApi = {
       method: 'PATCH',
     })
   },
+
+  getStaffCheckInReady() {
+    return request('/api/bookings/staff/check-in-ready')
+  },
 }
+
+
+/* =========================================================
+   CHECK-IN API
+   CustomerBookingService
+   ========================================================= */
+
+export const checkInApi = {
+  checkInBooking(bookingId, data) {
+    return request(
+      `/api/check-ins/booking/${bookingId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    )
+  },
+
+  checkInWalkIn(data) {
+    return request(
+      '/api/check-ins/walk-in',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    )
+  },
+}
+
+
+/* =========================================================
+   JOB CARD API
+   JobMaintenanceService
+   ========================================================= */
+
+export const jobCardApi = {
+  create(data) {
+    return jobMaintenanceRequest(
+      '/api/jobs',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    )
+  },
+
+  getAll() {
+    return jobMaintenanceRequest('/api/jobs')
+  },
+
+  getById(id) {
+    return jobMaintenanceRequest(
+      `/api/jobs/${id}`,
+    )
+  },
+
+  getByCheckIn(checkInId) {
+    return jobMaintenanceRequest(
+      `/api/jobs/check-in/${checkInId}`,
+    )
+  },
+}
+
+
+/* =========================================================
+   MECHANIC API
+   CustomerBookingService
+   ========================================================= */
+
+export const mechanicApi = {
+  getActiveMechanics() {
+    return request('/api/auth/mechanics')
+  },
+}
+
+
+/* =========================================================
+   MECHANIC ASSIGNMENT API
+   JobMaintenanceService
+   ========================================================= */
+
+export const mechanicAssignmentApi = {
+  assign(data) {
+    return jobMaintenanceRequest(
+      '/api/mechanic-assignments',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    )
+  },
+
+  getByJob(jobCardId) {
+    return jobMaintenanceRequest(
+      `/api/mechanic-assignments/job/${jobCardId}`,
+    )
+  },
+
+  getMyJobs() {
+    return jobMaintenanceRequest(
+      '/api/mechanic-assignments/my-jobs',
+    )
+  },
+}
+
+/* =========================================================
+   INSPECTION API
+   JobMaintenanceService
+   ========================================================= */
+
+export const inspectionApi = {
+  save(data) {
+    return jobMaintenanceRequest('/api/inspections', { method: 'POST', body: JSON.stringify(data) })
+  },
+  getMy() {
+    return jobMaintenanceRequest('/api/inspections/my')
+  },
+  getByJob(jobCardId) {
+    return jobMaintenanceRequest(`/api/inspections/job/${jobCardId}`)
+  },
+  getCompleted() {
+    return jobMaintenanceRequest('/api/inspections/completed')
+  },
+  complete(id) {
+    return jobMaintenanceRequest(`/api/inspections/${id}/complete`, { method: 'POST' })
+  },
+}
+
+
+/* =========================================================
+   REPAIR TASK API
+   JobMaintenanceService
+   ========================================================= */
+
+export const repairTaskApi = {
+  getByJob(jobCardId) {
+    return jobMaintenanceRequest(`/api/repair-tasks/job/${jobCardId}`)
+  },
+  create(data) {
+    return jobMaintenanceRequest('/api/repair-tasks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+  update(id, data) {
+    return jobMaintenanceRequest(`/api/repair-tasks/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+  complete(id) {
+    return jobMaintenanceRequest(`/api/repair-tasks/${id}/complete`, {
+      method: 'POST',
+    })
+  },
+}
+
+export const repairNoteApi = {
+  getByJob(jobCardId) {
+    return jobMaintenanceRequest(`/api/repair-notes/job/${jobCardId}`)
+  },
+  create(data) {
+    return jobMaintenanceRequest('/api/repair-notes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+  update(id, data) {
+    return jobMaintenanceRequest(`/api/repair-notes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+}
+
+/* =========================================================
+   JOB STATUS API
+   JobMaintenanceService
+   ========================================================= */
+
+export const jobStatusApi = {
+  getStatus(jobCardId) {
+    return jobMaintenanceRequest(`/api/job-status/${jobCardId}`)
+  },
+  getHistory(jobCardId) {
+    return jobMaintenanceRequest(`/api/job-status/${jobCardId}/history`)
+  },
+  transition(jobCardId, status) {
+    return jobMaintenanceRequest(`/api/job-status/${jobCardId}/transition`, {
+      method: 'POST',
+      body: JSON.stringify({ status }),
+    })
+  },
+}
+
+
+/* =========================================================
+   ACTIVE JOBS REPORT API
+   JobMaintenanceService
+   ========================================================= */
+
+export const activeJobsReportApi = {
+  getActiveJobs(status = '') {
+    const query = status
+      ? `?status=${encodeURIComponent(status)}`
+      : ''
+
+    return jobMaintenanceRequest(
+      `/api/reports/active-jobs${query}`,
+    )
+  },
+}
+
+/* =========================================================
+   ADMIN API
+   CustomerBookingService
+   ========================================================= */
+
+export const adminApi = {
+  getAllUsers() {
+    return request('/api/admin/users')
+  },
+
+  createUser(userData) {
+    return request('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    })
+  },
+
+  updateUserRole(userId, role) {
+    return request(`/api/admin/users/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    })
+  },
+
+  toggleUserStatus(userId, isActive) {
+    return request(`/api/admin/users/${userId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isActive }),
+    })
+  },
+
+  getStats() {
+    return request('/api/admin/stats')
+  },
+}
+

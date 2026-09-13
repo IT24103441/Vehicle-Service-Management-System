@@ -2,11 +2,22 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import {
   authApi,
   clearAuth,
+  getRole,
 } from '../services/api'
 
 function CustomerSidebar() {
   const navigate = useNavigate()
   const location = useLocation()
+  const role = getRole()
+
+  const isServiceAdvisor =
+    role === 'ServiceAdvisor' ||
+    role === 'Staff' ||
+    role === 'Administrator'
+
+  const isMechanic =
+    role === 'Mechanic' ||
+    role === 'Administrator'
 
   function isActive(path) {
     if (path === '/profile') {
@@ -111,9 +122,27 @@ function CustomerSidebar() {
             <span className="sidebar-link-icon">
               ＋
             </span>
-
             Create Booking
           </button>
+
+          {isMechanic && (
+            <button
+              className={
+                isActive('/mechanic/my-jobs')
+                  ? 'sidebar-link active'
+                  : 'sidebar-link'
+              }
+              onClick={() =>
+                navigate('/mechanic/my-jobs')
+              }
+            >
+              <span className="sidebar-link-icon">
+                🔧
+              </span>
+
+              My Jobs
+            </button>
+          )}
         </nav>
       </div>
 

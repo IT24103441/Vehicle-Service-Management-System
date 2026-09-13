@@ -33,6 +33,7 @@ builder.Services.AddDbContext<CustomerBookingDbContext>(
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddSingleton<IBookingEventPublisher, BookingEventPublisher>();
+builder.Services.AddSingleton<ICheckInEventPublisher, CheckInEventPublisher>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 
@@ -115,7 +116,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Disabled for HTTP development — HTTPS redirect breaks frontend HTTP requests
 
 app.UseCors("AllowReactFrontend");
 
