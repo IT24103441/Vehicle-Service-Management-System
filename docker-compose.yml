@@ -3,6 +3,8 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VITE_API_BASE_URL: "http://144.24.106.68:5001"
     image: vsc-frontend:dev
     container_name: vsc-frontend
     ports:
