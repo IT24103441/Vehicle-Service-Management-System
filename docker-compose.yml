@@ -21,13 +21,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Server=host.docker.internal;Port=3306;Database=customer_booking_db;User=vsc_app;Password=${MYSQL_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=customer_booking_db;User=vsc_app;Password=${MYSQL_PASSWORD}"
       Jwt__Key: "${JWT_KEY}"
       Jwt__Issuer: "VehicleServiceCenter"
       Jwt__Audience: "VehicleServiceCenterClients"
       Kafka__BootstrapServers: "kafka:29092"
     depends_on:
       - kafka
+      - mysql
 
   job-maintenance:
     build:
@@ -39,13 +40,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Staging
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Server=host.docker.internal;Port=3306;Database=job_maintenance_db;User=vsc_app;Password=${MYSQL_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=job_maintenance_db;User=vsc_app;Password=${MYSQL_PASSWORD}"
       Jwt__Key: "${JWT_KEY}"
       Jwt__Issuer: "VehicleServiceCenter"
       Jwt__Audience: "VehicleServiceCenterClients"
       Kafka__BootstrapServers: "kafka:29092"
     depends_on:
       - kafka
+      - mysql
 
   kafka:
     image: confluentinc/cp-kafka:8.3.0
@@ -67,3 +69,18 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+  mysql:
+    image: mysql:8.4
+    container_name: vsc-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: customer_booking_db
+      MYSQL_USER: vsc_app
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    volumes:
+      - vsc-mysql-data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  vsc-mysql-data:
