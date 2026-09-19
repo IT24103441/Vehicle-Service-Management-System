@@ -1,10 +1,22 @@
 const CUSTOMER_BOOKING_API =
   import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:5001'
+  'https://vcs-customerbooking-service-gbcpfsfecdcqayda.eastasia-01.azurewebsites.net'
 
 const JOB_MAINTENANCE_API =
   import.meta.env.VITE_JOB_MAINTENANCE_API_BASE_URL ||
-  'http://localhost:5002'
+  'https://vcs-jobmaintenance-service-deatcramh9e5g2ea.eastasia-01.azurewebsites.net'
+
+const BILLING_API =
+  import.meta.env.VITE_BILLING_API_BASE_URL ||
+  'https://vcs-billing-service-dkc8cjbccpcuejaz.eastasia-01.azurewebsites.net'
+
+const INVENTORY_API =
+  import.meta.env.VITE_INVENTORY_API_BASE_URL ||
+  'https://vcs-inventory-service-g8gfdqhwb6d4hsdy.eastasia-01.azurewebsites.net'
+
+const NOTIFICATION_API =
+  import.meta.env.VITE_NOTIFICATION_API_BASE_URL ||
+  'https://vcs-notification-service-cnd8ejgzbfanded7.eastasia-01.azurewebsites.net'
 
 
 export function getToken() {
