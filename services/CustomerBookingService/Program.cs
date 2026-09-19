@@ -111,10 +111,11 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// Environment check එක නැතුව Production වලත් OpenAPI ක්‍රියාත්මක වීමට:
+app.MapOpenApi();
+
+// Root URL එකට එන විට OpenAPI JSON වෙත redirect කිරීම සඳහා (නිවැරදි ක්‍රමය):
+app.MapGet("/", () => Results.Redirect("/openapi/v1.json"));
 
 // app.UseHttpsRedirection(); // Disabled for HTTP development — HTTPS redirect breaks frontend HTTP requests
 
