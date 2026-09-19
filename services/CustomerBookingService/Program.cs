@@ -98,7 +98,11 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins("http://localhost:5173", "http://144.24.106.68:8080")
+                .WithOrigins(
+                    "http://localhost:5173", 
+                    "http://144.24.106.68:8080",
+                    "https://zealous-sand-061bb6b00.6.azurestaticapps.net" 
+                )
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         }
@@ -111,13 +115,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Environment check එක නැතුව Production වලත් OpenAPI ක්‍රියාත්මක වීමට:
+
 app.MapOpenApi();
 
-// Root URL එකට එන විට OpenAPI JSON වෙත redirect කිරීම සඳහා (නිවැරදි ක්‍රමය):
+
 app.MapGet("/", () => Results.Redirect("/openapi/v1.json"));
 
-// app.UseHttpsRedirection(); // Disabled for HTTP development — HTTPS redirect breaks frontend HTTP requests
+
 
 app.UseCors("AllowReactFrontend");
 
