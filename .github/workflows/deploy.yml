@@ -2,7 +2,7 @@ name: Build and Deploy .NET Microservices to Azure
 
 on:
   push:
-    branches: [ "feature/azure-ci-cd", "main","develop" ] 
+    branches: [ "feature/azure-ci-cd", "production"] 
 
 jobs:
   build-and-deploy:
