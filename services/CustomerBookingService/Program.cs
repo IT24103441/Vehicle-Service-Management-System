@@ -111,10 +111,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+
+app.MapOpenApi();
+
+app.MapGet("/", async context =>
 {
-    app.MapOpenApi();
-}
+    context.Response.Redirect("/openapi/v1.json");
+    return Task.CompletedTask;
+});
 
 // app.UseHttpsRedirection(); // Disabled for HTTP development — HTTPS redirect breaks frontend HTTP requests
 
