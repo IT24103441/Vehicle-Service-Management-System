@@ -4973,3 +4973,26 @@ body {
     flex-direction: column;
   }
 }
+
+/* =====================================================
+   INVENTORY / SPARE PARTS
+   ===================================================== */
+
+.inventory-content { display: grid; gap: 24px; }
+.inventory-form-card h2, .inventory-list-header h2 { margin-top: 0; }
+.inventory-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.inventory-form label { display: grid; gap: 7px; color: #334155; font-size: 13px; font-weight: 700; }
+.inventory-form input, .inventory-search input { box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; font: inherit; }
+.inventory-form-actions { grid-column: 1 / -1; display: flex; gap: 10px; }
+.inventory-list-header { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 20px; }
+.inventory-list-header p { margin: 5px 0 0; color: #64748b; font-size: 13px; }
+.inventory-search { display: flex; align-items: center; gap: 8px; min-width: min(100%, 360px); color: #64748b; }
+.inventory-actions { display: flex; gap: 7px; align-items: center; }
+.inventory-actions .portal-secondary-button { display: inline-flex; align-items: center; gap: 5px; padding: 7px 9px; font-size: 12px; }
+.inventory-delete-button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; background: #fff1f2; cursor: pointer; }
+
+@media (max-width: 760px) {
+  .inventory-form { grid-template-columns: 1fr; }
+  .inventory-list-header { align-items: stretch; flex-direction: column; }
+  .inventory-search { min-width: 0; }
+}
