@@ -60,6 +60,10 @@ export function getRole() {
   return localStorage.getItem('role') || ''
 }
 
+export function getUserEmail() {
+  return localStorage.getItem('email') || ''
+}
+
 
 /*
  * Generic request for CustomerBookingService
@@ -146,6 +150,38 @@ async function jobMaintenanceRequest(path, options = {}) {
     error.status = response.status
     error.data = data
 
+    throw error
+  }
+
+  return data
+}
+
+/*
+ * Generic request for InventoryService
+ */
+async function inventoryRequest(path, options = {}) {
+  const token = getToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  const response = await fetch(`${INVENTORY_API}${path}`, {
+    ...options,
+    headers,
+  })
+  const data = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    const error = new Error(
+      data?.message || data?.detail || data?.title || `Request failed with status ${response.status}`,
+    )
+    error.status = response.status
+    error.data = data
     throw error
   }
 
@@ -496,6 +532,51 @@ export const activeJobsReportApi = {
     return jobMaintenanceRequest(
       `/api/reports/active-jobs${query}`,
     )
+  },
+}
+
+/* =========================================================
+   SPARE PARTS API
+   InventoryService
+   ========================================================= */
+
+export const sparePartApi = {
+  getAll(search = '') {
+    const query = search.trim()
+      ? `?search=${encodeURIComponent(search.trim())}`
+      : ''
+    return inventoryRequest(`/api/spare-parts${query}`)
+  },
+
+  getById(id) {
+    return inventoryRequest(`/api/spare-parts/${id}`)
+  },
+
+  create(part) {
+    return inventoryRequest('/api/spare-parts', {
+      method: 'POST',
+      body: JSON.stringify(part),
+    })
+  },
+
+  update(id, part) {
+    return inventoryRequest(`/api/spare-parts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(part),
+    })
+  },
+
+  adjustStock(id, adjustment) {
+    return inventoryRequest(`/api/spare-parts/${id}/adjust-stock`, {
+      method: 'POST',
+      body: JSON.stringify({ adjustment }),
+    })
+  },
+
+  remove(id) {
+    return inventoryRequest(`/api/spare-parts/${id}`, {
+      method: 'DELETE',
+    })
   },
 }
 

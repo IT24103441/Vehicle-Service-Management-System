@@ -33,6 +33,7 @@ import MechanicPage from './pages/MechanicPage'
 import EditMechanicProfilePage from './pages/EditMechanicProfilePage'
 import AdministratorPage from './pages/AdministratorPage'
 import ActiveJobsDashboardPage from './pages/ActiveJobsDashboardPage'
+import SparePartsPage from './pages/SparePartsPage'
 
 function HomeRedirect() {
   if (!isAuthenticated()) {
@@ -42,6 +43,10 @@ function HomeRedirect() {
   const role = getRole()
   if (role === 'Administrator') {
     return <Navigate to="/admin" replace />
+  }
+
+  if (role === 'InventoryOfficer') {
+    return <Navigate to="/inventory/spare-parts" replace />
   }
 
   if (role === 'ServiceAdvisor' || role === 'Staff') {
@@ -68,6 +73,15 @@ function App() {
         element={
           <ProtectedRoute>
             <AdministratorPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/inventory/spare-parts"
+        element={
+          <ProtectedRoute roles={['InventoryOfficer', 'Administrator']}>
+            <SparePartsPage />
           </ProtectedRoute>
         }
       />
