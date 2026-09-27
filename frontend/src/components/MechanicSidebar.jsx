@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Wrench,
   ClipboardList,
+  PackagePlus,
   LogOut,
 } from 'lucide-react'
 import { authApi, clearAuth } from '../services/api'
@@ -69,6 +70,10 @@ function MechanicSidebar() {
               <ClipboardList size={17} />
             </span>
             My Assigned Jobs
+          </button>
+          <button className={isActive('/mechanic/part-requests') ? 'sidebar-link active' : 'sidebar-link'} onClick={() => navigate('/mechanic/part-requests')}>
+            <span className="sidebar-link-icon"><PackagePlus size={17} /></span>
+            Request Parts
           </button>
         </nav>
       </div>

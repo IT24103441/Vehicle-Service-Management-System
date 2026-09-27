@@ -34,6 +34,8 @@ import EditMechanicProfilePage from './pages/EditMechanicProfilePage'
 import AdministratorPage from './pages/AdministratorPage'
 import ActiveJobsDashboardPage from './pages/ActiveJobsDashboardPage'
 import SparePartsPage from './pages/SparePartsPage'
+import PartRequestPage from './pages/PartRequestPage'
+import InventoryPartRequestsPage from './pages/InventoryPartRequestsPage'
 
 function HomeRedirect() {
   if (!isAuthenticated()) {
@@ -85,6 +87,8 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/inventory/part-requests" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryPartRequestsPage /></ProtectedRoute>} />
+      <Route path="/mechanic/part-requests" element={<ProtectedRoute roles={['Mechanic']}><PartRequestPage /></ProtectedRoute>} />
 
 
       <Route
