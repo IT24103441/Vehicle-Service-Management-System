@@ -14,6 +14,14 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
 );
 
 builder.Services.AddScoped<ISparePartService, SparePartService>();
+builder.Services.AddScoped<IPartRequestService, PartRequestService>();
+builder.Services.AddScoped<IJobCardGateway, JobCardGateway>();
+builder.Services.AddHttpClient("JobMaintenanceService", client =>
+{
+    var baseUrl = builder.Configuration["JobMaintenanceService:BaseUrl"]
+        ?? throw new InvalidOperationException("JobMaintenanceService:BaseUrl is missing.");
+    client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+});
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrWhiteSpace(jwtKey))

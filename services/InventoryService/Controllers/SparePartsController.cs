@@ -7,17 +7,19 @@ namespace InventoryService.Controllers;
 
 [ApiController]
 [Route("api/spare-parts")]
-[Authorize(Roles = "InventoryOfficer,Administrator")]
+[Authorize]
 public class SparePartsController : ControllerBase
 {
     private readonly ISparePartService _service;
     public SparePartsController(ISparePartService service) => _service = service;
 
     [HttpGet]
+    [Authorize(Roles = "InventoryOfficer,Administrator,Mechanic")]
     public async Task<IActionResult> GetAll([FromQuery] string? search, CancellationToken cancellationToken) =>
         Ok(await _service.GetAllAsync(search, cancellationToken));
 
     [HttpGet("{id:int}")]
+    [Authorize(Roles = "InventoryOfficer,Administrator,Mechanic")]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
         try { return Ok(await _service.GetByIdAsync(id, cancellationToken)); }
@@ -25,6 +27,7 @@ public class SparePartsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "InventoryOfficer,Administrator")]
     public async Task<IActionResult> Create([FromBody] CreateSparePartDto dto, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -37,6 +40,7 @@ public class SparePartsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "InventoryOfficer,Administrator")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateSparePartDto dto, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -46,6 +50,7 @@ public class SparePartsController : ControllerBase
     }
 
     [HttpPost("{id:int}/adjust-stock")]
+    [Authorize(Roles = "InventoryOfficer,Administrator")]
     public async Task<IActionResult> AdjustStock(int id, [FromBody] AdjustStockDto dto, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -55,6 +60,7 @@ public class SparePartsController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "InventoryOfficer,Administrator")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         try { await _service.DeleteAsync(id, cancellationToken); return NoContent(); }

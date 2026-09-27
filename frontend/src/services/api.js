@@ -580,6 +580,24 @@ export const sparePartApi = {
   },
 }
 
+export const partRequestApi = {
+  create(data) {
+    return inventoryRequest('/api/part-requests', { method: 'POST', body: JSON.stringify(data) })
+  },
+  getMine() {
+    return inventoryRequest('/api/part-requests/mine')
+  },
+  getPending() {
+    return inventoryRequest('/api/part-requests/pending')
+  },
+  getById(id) {
+    return inventoryRequest(`/api/part-requests/${id}`)
+  },
+  issue(id) {
+    return inventoryRequest(`/api/part-requests/${id}/issue`, { method: 'POST' })
+  },
+}
+
 /* =========================================================
    ADMIN API
    CustomerBookingService
