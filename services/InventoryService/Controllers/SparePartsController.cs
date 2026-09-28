@@ -26,6 +26,16 @@ public class SparePartsController : ControllerBase
         catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
     }
 
+    [HttpGet("reports/current-stock")]
+    [Authorize(Roles = "InventoryOfficer,Administrator")]
+    public async Task<IActionResult> GetCurrentStockReport(CancellationToken cancellationToken) =>
+        Ok(await _service.GetCurrentStockReportAsync(cancellationToken));
+
+    [HttpGet("reports/low-stock")]
+    [Authorize(Roles = "InventoryOfficer,Administrator")]
+    public async Task<IActionResult> GetLowStockReport(CancellationToken cancellationToken) =>
+        Ok(await _service.GetLowStockReportAsync(cancellationToken));
+
     [HttpPost]
     [Authorize(Roles = "InventoryOfficer,Administrator")]
     public async Task<IActionResult> Create([FromBody] CreateSparePartDto dto, CancellationToken cancellationToken)

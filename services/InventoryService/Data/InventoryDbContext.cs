@@ -25,6 +25,7 @@ namespace InventoryService.Data
                 entity.Property(x => x.Name).IsRequired().HasMaxLength(200);
                 entity.Property(x => x.Description).IsRequired().HasMaxLength(1000);
                 entity.Property(x => x.Quantity).IsRequired();
+                entity.Property(x => x.LowStockThreshold).IsRequired();
                 entity.Property(x => x.UnitPrice).HasPrecision(18, 2).IsRequired();
                 entity.HasIndex(x => x.Name);
             });

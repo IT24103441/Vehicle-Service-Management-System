@@ -18,7 +18,13 @@ public class PartRequestService : IPartRequestService
 {
     private readonly InventoryDbContext _db;
     private readonly IJobCardGateway _jobs;
-    public PartRequestService(InventoryDbContext db, IJobCardGateway jobs) { _db = db; _jobs = jobs; }
+    private readonly ILowStockEventPublisher _lowStockEvents;
+    public PartRequestService(InventoryDbContext db, IJobCardGateway jobs, ILowStockEventPublisher lowStockEvents)
+    {
+        _db = db;
+        _jobs = jobs;
+        _lowStockEvents = lowStockEvents;
+    }
 
     public async Task<PartRequestResponseDto> CreateAsync(CreatePartRequestDto dto, string mechanicId, string mechanicName, string bearerToken, CancellationToken cancellationToken = default)
     {
@@ -48,6 +54,7 @@ public class PartRequestService : IPartRequestService
     {
         var snapshot = await RequestQuery().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken) ?? throw new KeyNotFoundException("Part request not found.");
         if (snapshot.Status != PartRequestStatus.Pending) throw new InvalidOperationException("This part request has already been issued.");
+        var wasLowStock = snapshot.SparePart!.Quantity <= snapshot.SparePart.LowStockThreshold;
         await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
         var issuedAt = DateTime.UtcNow;
         var requestChanged = await _db.Database.ExecuteSqlInterpolatedAsync($@"UPDATE PartRequests SET Status = {PartRequestStatus.Issued}, IssuedAt = {issuedAt} WHERE Id = {id} AND Status = {PartRequestStatus.Pending}", cancellationToken);
@@ -59,6 +66,8 @@ public class PartRequestService : IPartRequestService
         await _db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         _db.ChangeTracker.Clear();
+        var updatedPart = await _db.SpareParts.AsNoTracking().FirstAsync(x => x.Id == snapshot.SparePartId, cancellationToken);
+        await _lowStockEvents.PublishIfTransitionedToLowStockAsync(updatedPart, wasLowStock, cancellationToken);
         return await GetByIdAsync(id, bearerToken, cancellationToken);
     }
 

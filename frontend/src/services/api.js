@@ -578,6 +578,14 @@ export const sparePartApi = {
       method: 'DELETE',
     })
   },
+
+  getCurrentStockReport() {
+    return inventoryRequest('/api/spare-parts/reports/current-stock')
+  },
+
+  getLowStockReport() {
+    return inventoryRequest('/api/spare-parts/reports/low-stock')
+  },
 }
 
 export const partRequestApi = {
