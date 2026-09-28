@@ -8,7 +8,7 @@ function InventoryPartRequestsPage() {
   useEffect(() => { load() }, [])
   async function issue(request) {
     if (!window.confirm(`Issue ${request.requestedQuantity} × ${request.sparePartName} to ${request.jobCardNumber || `job #${request.jobCardId}`}? Current stock: ${request.currentStock}`)) return
-    try { setIssuing(request.id); setError(''); setSuccess(''); const result = await partRequestApi.issue(request.id); setSuccess(`Request #${result.id} issued successfully. ${result.issue.quantityIssued} item(s) issued for ${result.jobCardNumber || `job #${result.jobCardId}`}.`); await load() }
+    try { setIssuing(request.id); setError(''); setSuccess(''); const result = await partRequestApi.issue(request.id); setSuccess(`Request #${result.id} issued successfully. ${result.issue.quantityIssued} item(s) issued for ${result.jobCardNumber || `job #${result.jobCardId}`}.`); await load(); window.dispatchEvent(new Event('inventory-stock-changed')) }
     catch (err) { setError(err.message || 'Unable to issue the part request.') } finally { setIssuing(null) }
   }
   return <div className="portal-layout"><InventorySidebar /><main className="portal-main"><header className="portal-topbar"><div><span className="portal-eyebrow">INVENTORY MANAGEMENT</span><h1>Pending Part Requests</h1></div><button className="portal-secondary-button" onClick={load}>Refresh</button></header><div className="portal-content">

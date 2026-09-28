@@ -1,4 +1,4 @@
-import { Boxes, ClipboardList, LogOut, PackageCheck } from 'lucide-react'
+import { AlertTriangle, Boxes, ClipboardList, LogOut, PackageCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { authApi, clearAuth, getRole } from '../services/api'
 
@@ -27,6 +27,14 @@ function InventorySidebar() {
           <button className="sidebar-link" onClick={() => navigate('/inventory/part-requests')}>
             <span className="sidebar-link-icon"><PackageCheck size={17} /></span>
             Part Requests
+          </button>
+          <button className="sidebar-link" onClick={() => navigate('/inventory/stock-report')}>
+            <span className="sidebar-link-icon"><Boxes size={17} /></span>
+            Current Stock
+          </button>
+          <button className="sidebar-link" onClick={() => navigate('/inventory/low-stock-report')}>
+            <span className="sidebar-link-icon"><AlertTriangle size={17} /></span>
+            Low Stock
           </button>
           {role === 'Administrator' && (
             <button className="sidebar-link" onClick={() => navigate('/admin')}>Administrator Portal</button>

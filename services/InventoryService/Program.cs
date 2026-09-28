@@ -15,6 +15,7 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
 
 builder.Services.AddScoped<ISparePartService, SparePartService>();
 builder.Services.AddScoped<IPartRequestService, PartRequestService>();
+builder.Services.AddSingleton<ILowStockEventPublisher, LowStockEventPublisher>();
 builder.Services.AddScoped<IJobCardGateway, JobCardGateway>();
 builder.Services.AddHttpClient("JobMaintenanceService", client =>
 {
