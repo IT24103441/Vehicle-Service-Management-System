@@ -4996,3 +4996,218 @@ body {
   .inventory-list-header { align-items: stretch; flex-direction: column; }
   .inventory-search { min-width: 0; }
 }
+
+/* =====================================================
+   DASHBOARD THEME — CHARCOAL & AMBER
+   Reference palette: #0b0b0b, #252525, #3d3d3d, #ff9f1c
+===================================================== */
+:root {
+  --dashboard-black: #0b0b0b;
+  --dashboard-charcoal: #252525;
+  --dashboard-panel: #353535;
+  --dashboard-panel-light: #414141;
+  --dashboard-amber: #ff9f1c;
+  --dashboard-amber-light: #ffbd59;
+  --dashboard-ink: #f8f8f6;
+  --dashboard-muted: #bdbdb8;
+}
+
+.portal-layout {
+  background: #555;
+}
+
+.customer-sidebar {
+  background: linear-gradient(180deg, #080808 0%, #151515 72%, #080808 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand-icon,
+.sidebar-user-avatar {
+  background: linear-gradient(135deg, var(--dashboard-amber), #db7510);
+  color: #111;
+}
+
+.sidebar-link-icon,
+.sidebar-link.active .sidebar-link-icon {
+  color: var(--dashboard-amber);
+}
+
+.sidebar-link.active {
+  background: linear-gradient(90deg, rgba(255, 159, 28, 0.23), rgba(255, 159, 28, 0.04));
+  box-shadow: inset 3px 0 0 var(--dashboard-amber);
+}
+
+.portal-main {
+  background: linear-gradient(145deg, #4a4a4a 0%, #303030 100%);
+  color: var(--dashboard-ink);
+}
+
+.portal-topbar {
+  min-height: 104px;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: rgba(42, 42, 42, 0.94);
+}
+
+.portal-eyebrow,
+.profile-welcome-label,
+.profile-identity span,
+.profile-section-title span {
+  color: var(--dashboard-amber);
+}
+
+.portal-topbar h1,
+.profile-welcome h2,
+.portal-card h1,
+.portal-card h2,
+.portal-card h3 {
+  color: var(--dashboard-ink);
+}
+
+.portal-user span,
+.report-subtitle,
+.inventory-list-header p,
+.portal-card > p {
+  color: var(--dashboard-muted);
+}
+
+.portal-user-avatar {
+  background: linear-gradient(135deg, var(--dashboard-amber), #c56a08) !important;
+  color: #151515 !important;
+  box-shadow: 0 5px 18px rgba(255, 159, 28, 0.24);
+}
+
+.portal-content {
+  width: min(1240px, calc(100% - 64px));
+}
+
+.portal-card,
+.modern-profile-card,
+.modal-card {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(145deg, #3d3d3d, #323232);
+  color: var(--dashboard-ink);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+}
+
+.portal-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--dashboard-amber);
+  opacity: 0.9;
+}
+
+.portal-grid .portal-card:hover,
+.portal-card:hover {
+  border-color: rgba(255, 159, 28, 0.45);
+  transform: translateY(-2px);
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.portal-primary-button,
+.active-job-action {
+  background: linear-gradient(135deg, #ffac32, #ec850e);
+  color: #17120a;
+  box-shadow: 0 8px 18px rgba(255, 159, 28, 0.2);
+}
+
+.portal-primary-button:hover,
+.active-job-action:hover {
+  background: linear-gradient(135deg, #ffc15c, #ff9210);
+  box-shadow: 0 12px 24px rgba(255, 159, 28, 0.3);
+}
+
+.portal-secondary-button,
+.secondary-button {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(8, 8, 8, 0.42);
+  color: #f7f7f4;
+}
+
+.portal-secondary-button:hover,
+.secondary-button:hover {
+  border-color: var(--dashboard-amber);
+  background: rgba(255, 159, 28, 0.13);
+  color: var(--dashboard-amber-light);
+}
+
+.portal-table-wrapper,
+.active-job-table-wrapper {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.portal-table,
+.active-job-table {
+  color: #f3f3ef;
+}
+
+.portal-table th,
+.active-job-table th {
+  background: #191919;
+  color: var(--dashboard-amber-light);
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+.portal-table td,
+.active-job-table td {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.portal-table tbody tr:hover,
+.active-job-table tbody tr:hover {
+  background: rgba(255, 159, 28, 0.07);
+}
+
+.inventory-form label { color: #ecece7; }
+.inventory-form input,
+.inventory-form select,
+.inventory-search input,
+.active-job-filters select {
+  color: #f6f6f2;
+  border-color: rgba(255, 255, 255, 0.17);
+  background: #242424;
+}
+
+.inventory-form input:focus,
+.inventory-form select:focus,
+.inventory-search input:focus,
+.active-job-filters select:focus {
+  border-color: var(--dashboard-amber);
+  box-shadow: 0 0 0 3px rgba(255, 159, 28, 0.16);
+}
+
+.active-job-total-card,
+.active-job-count-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #171717;
+  color: #fff;
+}
+
+.active-job-total-card { border-left: 4px solid var(--dashboard-amber); }
+.active-job-count-card.selected { background: var(--dashboard-amber); color: #18120b; }
+
+.active-job-group-heading,
+.report-footer {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--dashboard-muted);
+}
+
+.modal-backdrop { background: rgba(0, 0, 0, 0.72); }
+.modal-card .form-group label { color: #eaeae5; }
+.modal-card .form-group input,
+.modal-card .form-group select {
+  color: #f8f8f4;
+  border-color: rgba(255, 255, 255, .16);
+  background: #242424;
+}
+
+@media (max-width: 650px) {
+  .portal-content { width: calc(100% - 30px); }
+  .portal-topbar { min-height: 84px; }
+}
