@@ -38,6 +38,8 @@ import PartRequestPage from './pages/PartRequestPage'
 import InventoryPartRequestsPage from './pages/InventoryPartRequestsPage'
 import InventoryStockReportPage from './pages/InventoryStockReportPage'
 import BillingChargesPage from './pages/BillingChargesPage'
+import InvoicesPage from './pages/InvoicesPage'
+import MyInvoicesPage from './pages/MyInvoicesPage'
 
 function HomeRedirect() {
   if (!isAuthenticated()) {
@@ -51,6 +53,10 @@ function HomeRedirect() {
 
   if (role === 'InventoryOfficer') {
     return <Navigate to="/inventory/spare-parts" replace />
+  }
+
+  if (role === 'Accounts') {
+    return <Navigate to="/billing/invoices" replace />
   }
 
   if (role === 'ServiceAdvisor' || role === 'Staff') {
@@ -93,7 +99,9 @@ function App() {
       <Route path="/inventory/stock-report" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryStockReportPage /></ProtectedRoute>} />
       <Route path="/inventory/low-stock-report" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryStockReportPage lowStockOnly /></ProtectedRoute>} />
       <Route path="/mechanic/part-requests" element={<ProtectedRoute roles={['Mechanic']}><PartRequestPage /></ProtectedRoute>} />
-      <Route path="/billing/part-charges" element={<ProtectedRoute roles={['ServiceAdvisor', 'Administrator']}><BillingChargesPage /></ProtectedRoute>} />
+      <Route path="/billing/part-charges" element={<ProtectedRoute roles={['Accounts', 'Administrator']}><BillingChargesPage /></ProtectedRoute>} />
+      <Route path="/billing/invoices" element={<ProtectedRoute roles={['Accounts', 'Administrator']}><InvoicesPage /></ProtectedRoute>} />
+      <Route path="/invoices" element={<ProtectedRoute roles={['Customer']}><MyInvoicesPage /></ProtectedRoute>} />
 
 
       <Route

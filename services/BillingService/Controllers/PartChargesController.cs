@@ -16,9 +16,9 @@ public class PartChargesController(BillingDbContext db, IInvoiceService invoices
     [HttpGet("invoice/job/{jobCardId:int}")]
     public async Task<IActionResult> GetInvoice(int jobCardId, CancellationToken ct) => Ok(await invoices.GetByJobAsync(jobCardId, ct));
 
-    [HttpPost("invoice/job/{jobCardId:int}/service"), Authorize(Roles = "ServiceAdvisor,Administrator")]
+    [HttpPost("invoice/job/{jobCardId:int}/service"), Authorize(Roles = "Accounts,Administrator")]
     public async Task<IActionResult> AddService(int jobCardId, AddManualChargeDto dto, CancellationToken ct) => await AddManual(jobCardId, ChargeType.Service, dto, ct);
-    [HttpPost("invoice/job/{jobCardId:int}/labour"), Authorize(Roles = "ServiceAdvisor,Administrator")]
+    [HttpPost("invoice/job/{jobCardId:int}/labour"), Authorize(Roles = "Accounts,Administrator")]
     public async Task<IActionResult> AddLabour(int jobCardId, AddManualChargeDto dto, CancellationToken ct) => await AddManual(jobCardId, ChargeType.Labour, dto, ct);
     private async Task<IActionResult> AddManual(int jobCardId, ChargeType type, AddManualChargeDto dto, CancellationToken ct) { if (!ModelState.IsValid) return ValidationProblem(ModelState); try { return Ok(await invoices.AddManualAsync(jobCardId, type, dto, ct)); } catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); } }
 }

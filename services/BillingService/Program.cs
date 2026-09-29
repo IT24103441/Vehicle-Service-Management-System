@@ -12,7 +12,9 @@ builder.Services.AddDbContext<BillingDbContext>(options =>
     )
 );
 builder.Services.AddHostedService<BillingService.Services.PartIssuedConsumer>();
+builder.Services.AddHostedService<BillingService.Services.ServiceCompletedConsumer>();
 builder.Services.AddScoped<BillingService.Services.IInvoiceService, BillingService.Services.InvoiceService>();
+builder.Services.AddScoped<BillingService.Services.IInvoiceEventPublisher, BillingService.Services.InvoiceEventPublisher>();
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true, ValidIssuer = builder.Configuration["Jwt:Issuer"], ValidAudience = builder.Configuration["Jwt:Audience"], IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.Zero });
 builder.Services.AddAuthorization();

@@ -4,6 +4,7 @@ import {
   Car,
   CalendarCheck,
   PlusCircle,
+  ReceiptText,
   Wrench,
   LogOut,
 } from 'lucide-react'
@@ -133,6 +134,14 @@ function CustomerSidebar() {
             </span>
             Create Booking
           </button>
+
+          {role === 'Customer' && <button
+            className={isActive('/invoices') ? 'sidebar-link active' : 'sidebar-link'}
+            onClick={() => navigate('/invoices')}
+          >
+            <span className="sidebar-link-icon"><ReceiptText size={17} /></span>
+            My Invoices
+          </button>}
 
           {isMechanic && (
             <button

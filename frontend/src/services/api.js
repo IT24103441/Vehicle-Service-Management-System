@@ -627,6 +627,14 @@ export const partChargeApi = {
   addLabour(jobCardId, data) { return billingRequest(`/api/part-charges/invoice/job/${jobCardId}/labour`, { method: 'POST', body: JSON.stringify(data) }) },
 }
 
+export const invoiceApi = {
+  getEligibleJobs() { return billingRequest('/api/invoices/eligible-jobs') },
+  generate(jobCardId) { return billingRequest(`/api/invoices/job/${jobCardId}/generate`, { method: 'POST' }) },
+  getAll() { return billingRequest('/api/invoices') },
+  getMine() { return billingRequest('/api/invoices/me') },
+  getById(id) { return billingRequest(`/api/invoices/${id}`) },
+}
+
 /* =========================================================
    ADMIN API
    CustomerBookingService
