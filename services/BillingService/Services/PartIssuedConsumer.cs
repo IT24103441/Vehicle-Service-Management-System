@@ -30,7 +30,7 @@ public class PartIssuedConsumer(IConfiguration configuration, IServiceScopeFacto
         if (await db.ProcessedKafkaEvents.AnyAsync(x => x.EventId == evt.EventId, ct)) { logger.LogInformation("Ignoring duplicate PartIssued event {EventId}.", evt.EventId); return; }
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         var invoices = scope.ServiceProvider.GetRequiredService<IInvoiceService>();
-        await invoices.AddPartAsync(evt.Data.JobCardId, evt.Data.IssueId, evt.Data.SparePartName, evt.Data.QuantityIssued, evt.Data.UnitPrice, ct);
+        await invoices.AddPartAsync(evt.Data.JobCardId, evt.Data.IssueId, evt.Data.RequestId, evt.Data.SparePartId, evt.Data.SparePartName, evt.Data.QuantityIssued, evt.Data.UnitPrice, ct);
         db.ProcessedKafkaEvents.Add(new ProcessedKafkaEvent { EventId = evt.EventId, EventType = evt.EventType }); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
         logger.LogInformation("Created part charge from PartIssued event {EventId} for JobCardId {JobCardId}.", evt.EventId, evt.Data.JobCardId);
     }
