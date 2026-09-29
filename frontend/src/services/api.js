@@ -633,6 +633,7 @@ export const invoiceApi = {
   getAll() { return billingRequest('/api/invoices') },
   getMine() { return billingRequest('/api/invoices/me') },
   getById(id) { return billingRequest(`/api/invoices/${id}`) },
+  recordPayment(id, data) { return billingRequest(`/api/invoices/${id}/payments`, { method: 'POST', body: JSON.stringify(data) }) },
 }
 
 /* =========================================================

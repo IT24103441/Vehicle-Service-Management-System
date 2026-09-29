@@ -12,7 +12,10 @@ public class Invoice
     public bool IsBillingEligible { get; set; }
     public bool IsGenerated { get; set; }
     public decimal TotalAmount { get; set; }
+    public decimal AmountPaid { get; set; }
+    public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public List<ChargeLine> ChargeLines { get; set; } = [];
+    public List<Payment> Payments { get; set; } = [];
 }

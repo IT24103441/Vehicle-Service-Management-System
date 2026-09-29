@@ -1,9 +1,10 @@
 import { AlertTriangle, Boxes, ClipboardList, LogOut, PackageCheck } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { authApi, clearAuth, getRole } from '../services/api'
 
 function InventorySidebar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const role = getRole()
 
   async function handleLogout() {
@@ -20,19 +21,23 @@ function InventorySidebar() {
           <div><strong>INVENTORY</strong><span>MANAGEMENT PORTAL</span></div>
         </div>
         <nav className="sidebar-navigation">
-          <button className="sidebar-link active" onClick={() => navigate('/inventory/spare-parts')}>
+          <button className={location.pathname === '/inventory/dashboard' ? 'sidebar-link active' : 'sidebar-link'} onClick={() => navigate('/inventory/dashboard')}>
+            <span className="sidebar-link-icon"><Boxes size={17} /></span>
+            Dashboard
+          </button>
+          <button className={location.pathname === '/inventory/spare-parts' ? 'sidebar-link active' : 'sidebar-link'} onClick={() => navigate('/inventory/spare-parts')}>
             <span className="sidebar-link-icon"><ClipboardList size={17} /></span>
             Spare Parts
           </button>
-          <button className="sidebar-link" onClick={() => navigate('/inventory/part-requests')}>
+          <button className={location.pathname === '/inventory/part-requests' ? 'sidebar-link active' : 'sidebar-link'} onClick={() => navigate('/inventory/part-requests')}>
             <span className="sidebar-link-icon"><PackageCheck size={17} /></span>
             Part Requests
           </button>
-          <button className="sidebar-link" onClick={() => navigate('/inventory/stock-report')}>
+          <button className={location.pathname === '/inventory/stock-report' ? 'sidebar-link active' : 'sidebar-link'} onClick={() => navigate('/inventory/stock-report')}>
             <span className="sidebar-link-icon"><Boxes size={17} /></span>
             Current Stock
           </button>
-          <button className="sidebar-link" onClick={() => navigate('/inventory/low-stock-report')}>
+          <button className={location.pathname === '/inventory/low-stock-report' ? 'sidebar-link active' : 'sidebar-link'} onClick={() => navigate('/inventory/low-stock-report')}>
             <span className="sidebar-link-icon"><AlertTriangle size={17} /></span>
             Low Stock
           </button>

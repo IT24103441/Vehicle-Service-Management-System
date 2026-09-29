@@ -5,6 +5,7 @@ import {
   BarChart3,
   ClipboardList,
   Building2,
+  Package,
   LogOut,
   Zap,
 } from 'lucide-react'
@@ -116,6 +117,14 @@ function AdminSidebar({ activeTab, setActiveTab }) {
               <Building2 size={17} />
             </span>
             Service Advisor Portal
+          </button>
+
+          <button
+            className={location.pathname === '/inventory/dashboard' ? 'sidebar-link active' : 'sidebar-link'}
+            onClick={() => navigate('/inventory/dashboard')}
+          >
+            <span className="sidebar-link-icon"><Package size={17} /></span>
+            Inventory Dashboard
           </button>
         </nav>
       </div>
