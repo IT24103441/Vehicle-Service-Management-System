@@ -606,6 +606,16 @@ export const partRequestApi = {
   },
 }
 
+// Job & Maintenance owns mechanic part requests. The legacy Inventory routes above remain unchanged.
+export const jobPartRequestApi = {
+  create(data) { return jobMaintenanceRequest('/api/job-part-requests', { method: 'POST', body: JSON.stringify(data) }) },
+  getMine() { return jobMaintenanceRequest('/api/job-part-requests/mine') },
+}
+
+export const partChargeApi = {
+  getByJob(jobCardId) { return fetch(`${BILLING_API}/api/part-charges/job/${jobCardId}`, { headers: { Authorization: getToken() ? `Bearer ${getToken()}` : '' } }).then(async response => { const data = await response.json().catch(() => null); if (!response.ok) throw new Error(data?.message || `Request failed with status ${response.status}`); return data }) },
+}
+
 /* =========================================================
    ADMIN API
    CustomerBookingService

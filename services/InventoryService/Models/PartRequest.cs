@@ -3,7 +3,9 @@ namespace InventoryService.Models;
 public class PartRequest
 {
     public int Id { get; set; }
+    public int? SourceRequestId { get; set; }
     public int JobCardId { get; set; }
+    public string JobCardNumber { get; set; } = string.Empty;
     public int SparePartId { get; set; }
     public int RequestedQuantity { get; set; }
     public string RequestingMechanicId { get; set; } = string.Empty;

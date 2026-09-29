@@ -21,6 +21,8 @@ builder.Services.AddScoped<IRepairNoteService, RepairNoteService>();
 builder.Services.AddScoped<IJobStatusService, JobStatusService>();
 builder.Services.AddScoped<IActiveJobsReportService, ActiveJobsReportService>();
 builder.Services.AddScoped<IInspectionService, InspectionService>();
+builder.Services.AddScoped<IPartRequestService, PartRequestService>();
+builder.Services.AddSingleton<IPartRequestEventPublisher, PartRequestEventPublisher>();
 builder.Services.AddHttpClient("CustomerBookingService");
 builder.Services.AddHostedService<VehicleCheckedInConsumer>();
 
