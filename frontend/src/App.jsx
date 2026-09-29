@@ -37,6 +37,7 @@ import SparePartsPage from './pages/SparePartsPage'
 import PartRequestPage from './pages/PartRequestPage'
 import InventoryPartRequestsPage from './pages/InventoryPartRequestsPage'
 import InventoryStockReportPage from './pages/InventoryStockReportPage'
+import BillingChargesPage from './pages/BillingChargesPage'
 
 function HomeRedirect() {
   if (!isAuthenticated()) {
@@ -92,6 +93,7 @@ function App() {
       <Route path="/inventory/stock-report" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryStockReportPage /></ProtectedRoute>} />
       <Route path="/inventory/low-stock-report" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryStockReportPage lowStockOnly /></ProtectedRoute>} />
       <Route path="/mechanic/part-requests" element={<ProtectedRoute roles={['Mechanic']}><PartRequestPage /></ProtectedRoute>} />
+      <Route path="/billing/part-charges" element={<ProtectedRoute roles={['ServiceAdvisor', 'Administrator']}><BillingChargesPage /></ProtectedRoute>} />
 
 
       <Route

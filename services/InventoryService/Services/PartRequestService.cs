@@ -1,6 +1,7 @@
 using InventoryService.Data;
 using InventoryService.DTOs;
 using InventoryService.Models;
+using InventoryService.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryService.Services;
@@ -19,11 +20,13 @@ public class PartRequestService : IPartRequestService
     private readonly InventoryDbContext _db;
     private readonly IJobCardGateway _jobs;
     private readonly ILowStockEventPublisher _lowStockEvents;
-    public PartRequestService(InventoryDbContext db, IJobCardGateway jobs, ILowStockEventPublisher lowStockEvents)
+    private readonly IPartIssuedEventPublisher _partIssuedEvents;
+    public PartRequestService(InventoryDbContext db, IJobCardGateway jobs, ILowStockEventPublisher lowStockEvents, IPartIssuedEventPublisher partIssuedEvents)
     {
         _db = db;
         _jobs = jobs;
         _lowStockEvents = lowStockEvents;
+        _partIssuedEvents = partIssuedEvents;
     }
 
     public async Task<PartRequestResponseDto> CreateAsync(CreatePartRequestDto dto, string mechanicId, string mechanicName, string bearerToken, CancellationToken cancellationToken = default)
@@ -32,7 +35,7 @@ public class PartRequestService : IPartRequestService
         await _jobs.EnsureMechanicIsAssignedAsync(dto.JobCardId, mechanicId, bearerToken, cancellationToken);
         var part = await _db.SpareParts.FirstOrDefaultAsync(x => x.Id == dto.SparePartId, cancellationToken)
             ?? throw new KeyNotFoundException("Spare part not found.");
-        var request = new PartRequest { JobCardId = job.Id, SparePartId = part.Id, RequestedQuantity = dto.RequestedQuantity, RequestingMechanicId = mechanicId, RequestingMechanicName = mechanicName, Status = PartRequestStatus.Pending, RequestedAt = DateTime.UtcNow };
+        var request = new PartRequest { JobCardId = job.Id, JobCardNumber = job.JobCardNumber, SparePartId = part.Id, RequestedQuantity = dto.RequestedQuantity, RequestingMechanicId = mechanicId, RequestingMechanicName = mechanicName, Status = PartRequestStatus.Pending, RequestedAt = DateTime.UtcNow };
         _db.PartRequests.Add(request);
         await _db.SaveChangesAsync(cancellationToken);
         return ToResponse(request, part, job.JobCardNumber);
@@ -61,13 +64,14 @@ public class PartRequestService : IPartRequestService
         if (requestChanged != 1) throw new InvalidOperationException("This part request has already been issued.");
         var stockChanged = await _db.Database.ExecuteSqlInterpolatedAsync($@"UPDATE SpareParts SET Quantity = Quantity - {snapshot.RequestedQuantity}, UpdatedAt = {issuedAt} WHERE Id = {snapshot.SparePartId} AND Quantity >= {snapshot.RequestedQuantity}", cancellationToken);
         if (stockChanged != 1) throw new InvalidOperationException("Insufficient stock to issue the requested quantity.");
-        var issue = new PartIssue { PartRequestId = snapshot.Id, JobCardId = snapshot.JobCardId, SparePartId = snapshot.SparePartId, QuantityIssued = snapshot.RequestedQuantity, InventoryOfficerId = officerId, InventoryOfficerName = officerName, IssuedAt = issuedAt };
+        var issue = new PartIssue { PartRequestId = snapshot.Id, JobCardId = snapshot.JobCardId, SparePartId = snapshot.SparePartId, QuantityIssued = snapshot.RequestedQuantity, UnitPrice = snapshot.SparePart.UnitPrice, TotalAmount = snapshot.SparePart.UnitPrice * snapshot.RequestedQuantity, InventoryOfficerId = officerId, InventoryOfficerName = officerName, IssuedAt = issuedAt };
         _db.PartIssues.Add(issue);
         await _db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         _db.ChangeTracker.Clear();
         var updatedPart = await _db.SpareParts.AsNoTracking().FirstAsync(x => x.Id == snapshot.SparePartId, cancellationToken);
         await _lowStockEvents.PublishIfTransitionedToLowStockAsync(updatedPart, wasLowStock, cancellationToken);
+        await _partIssuedEvents.PublishAsync(new PartIssuedEvent { CorrelationId = snapshot.SourceRequestId?.ToString() ?? snapshot.Id.ToString(), Data = new PartIssuedData { IssueId = issue.Id, RequestId = snapshot.SourceRequestId ?? snapshot.Id, JobCardId = snapshot.JobCardId, SparePartId = snapshot.SparePartId, SparePartName = snapshot.SparePart.Name, QuantityIssued = issue.QuantityIssued, UnitPrice = issue.UnitPrice, TotalAmount = issue.TotalAmount } }, cancellationToken);
         return await GetByIdAsync(id, bearerToken, cancellationToken);
     }
 
@@ -80,7 +84,7 @@ public class PartRequestService : IPartRequestService
     }
 
     private IQueryable<PartRequest> RequestQuery() => _db.PartRequests.Include(x => x.SparePart).Include(x => x.PartIssue);
-    private async Task<PartRequestResponseDto> ToResponseAsync(PartRequest request, string token, CancellationToken ct) => ToResponse(request, request.SparePart!, (await _jobs.GetJobAsync(request.JobCardId, token, ct)).JobCardNumber);
+    private Task<PartRequestResponseDto> ToResponseAsync(PartRequest request, string token, CancellationToken ct) => Task.FromResult(ToResponse(request, request.SparePart!, request.JobCardNumber));
     private static PartRequestResponseDto ToResponse(PartRequest request, SparePart part, string jobCardNumber) => new()
     {
         Id = request.Id, JobCardId = request.JobCardId, JobCardNumber = jobCardNumber, SparePartId = request.SparePartId, SparePartName = part.Name, RequestedQuantity = request.RequestedQuantity, CurrentStock = part.Quantity, RequestingMechanicId = request.RequestingMechanicId, RequestingMechanicName = request.RequestingMechanicName, Status = request.Status, RequestedAt = request.RequestedAt, IssuedAt = request.IssuedAt,

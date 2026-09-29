@@ -8,6 +8,7 @@ builder.Services.AddDbContext<BillingDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")!
     )
 );
+builder.Services.AddHostedService<BillingService.Services.PartIssuedConsumer>();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -30,6 +31,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+    await scope.ServiceProvider.GetRequiredService<BillingDbContext>().Database.MigrateAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

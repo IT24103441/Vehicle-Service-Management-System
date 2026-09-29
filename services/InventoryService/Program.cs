@@ -17,6 +17,8 @@ builder.Services.AddScoped<ISparePartService, SparePartService>();
 builder.Services.AddScoped<IPartRequestService, PartRequestService>();
 builder.Services.AddSingleton<ILowStockEventPublisher, LowStockEventPublisher>();
 builder.Services.AddScoped<IJobCardGateway, JobCardGateway>();
+builder.Services.AddSingleton<IPartIssuedEventPublisher, PartIssuedEventPublisher>();
+builder.Services.AddHostedService<PartRequestedConsumer>();
 builder.Services.AddHttpClient("JobMaintenanceService", client =>
 {
     var baseUrl = builder.Configuration["JobMaintenanceService:BaseUrl"]
