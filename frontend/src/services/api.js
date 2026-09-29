@@ -188,6 +188,14 @@ async function inventoryRequest(path, options = {}) {
   return data
 }
 
+async function billingRequest(path, options = {}) {
+  const token = getToken()
+  const response = await fetch(`${BILLING_API}${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers || {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) } })
+  const data = await response.json().catch(() => null)
+  if (!response.ok) throw new Error(data?.message || data?.detail || data?.title || `Request failed with status ${response.status}`)
+  return data
+}
+
 
 /* =========================================================
    AUTH API
@@ -614,6 +622,9 @@ export const jobPartRequestApi = {
 
 export const partChargeApi = {
   getByJob(jobCardId) { return fetch(`${BILLING_API}/api/part-charges/job/${jobCardId}`, { headers: { Authorization: getToken() ? `Bearer ${getToken()}` : '' } }).then(async response => { const data = await response.json().catch(() => null); if (!response.ok) throw new Error(data?.message || `Request failed with status ${response.status}`); return data }) },
+  getInvoice(jobCardId) { return billingRequest(`/api/part-charges/invoice/job/${jobCardId}`) },
+  addService(jobCardId, data) { return billingRequest(`/api/part-charges/invoice/job/${jobCardId}/service`, { method: 'POST', body: JSON.stringify(data) }) },
+  addLabour(jobCardId, data) { return billingRequest(`/api/part-charges/invoice/job/${jobCardId}/labour`, { method: 'POST', body: JSON.stringify(data) }) },
 }
 
 /* =========================================================

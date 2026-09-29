@@ -25,11 +25,12 @@ public class PartIssuedConsumer(IConfiguration configuration, IServiceScopeFacto
     private async Task ProcessAsync(string payload, CancellationToken ct)
     {
         var evt = JsonSerializer.Deserialize<PartIssuedEvent>(payload, new JsonSerializerOptions(JsonSerializerDefaults.Web)) ?? throw new JsonException("PartIssued payload is empty.");
-        if (evt.EventId == Guid.Empty || !string.Equals(evt.EventType, "PartIssued", StringComparison.OrdinalIgnoreCase) || evt.Data.IssueId <= 0 || evt.Data.JobCardId <= 0 || evt.Data.SparePartId <= 0 || evt.Data.QuantityIssued <= 0 || evt.Data.UnitPrice < 0 || evt.Data.TotalAmount < 0) throw new JsonException("Invalid PartIssued event.");
+        if (evt.EventId == Guid.Empty || !string.Equals(evt.EventType, "PartIssued", StringComparison.OrdinalIgnoreCase) || evt.Data.IssueId <= 0 || evt.Data.JobCardId <= 0 || evt.Data.SparePartId <= 0 || evt.Data.QuantityIssued <= 0 || evt.Data.UnitPrice < 0) throw new JsonException("Invalid PartIssued event.");
         using var scope = scopeFactory.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<BillingDbContext>();
         if (await db.ProcessedKafkaEvents.AnyAsync(x => x.EventId == evt.EventId, ct)) { logger.LogInformation("Ignoring duplicate PartIssued event {EventId}.", evt.EventId); return; }
         await using var tx = await db.Database.BeginTransactionAsync(ct);
-        if (!await db.PartCharges.AnyAsync(x => x.PartIssueId == evt.Data.IssueId, ct)) db.PartCharges.Add(new PartCharge { JobCardId = evt.Data.JobCardId, PartIssueId = evt.Data.IssueId, PartRequestId = evt.Data.RequestId, SparePartId = evt.Data.SparePartId, SparePartName = evt.Data.SparePartName, Quantity = evt.Data.QuantityIssued, UnitPrice = evt.Data.UnitPrice, TotalAmount = evt.Data.TotalAmount });
+        var invoices = scope.ServiceProvider.GetRequiredService<IInvoiceService>();
+        await invoices.AddPartAsync(evt.Data.JobCardId, evt.Data.IssueId, evt.Data.SparePartName, evt.Data.QuantityIssued, evt.Data.UnitPrice, ct);
         db.ProcessedKafkaEvents.Add(new ProcessedKafkaEvent { EventId = evt.EventId, EventType = evt.EventType }); await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
         logger.LogInformation("Created part charge from PartIssued event {EventId} for JobCardId {JobCardId}.", evt.EventId, evt.Data.JobCardId);
     }
