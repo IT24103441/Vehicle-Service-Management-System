@@ -5182,6 +5182,32 @@ body {
   box-shadow: 0 0 0 3px rgba(255, 159, 28, 0.16);
 }
 
+/* Keep inventory loading and empty states consistent with the dark portal. */
+.portal-loading-card {
+  width: min(100%, 360px);
+  min-height: 180px;
+  margin: 32px auto;
+  display: grid;
+  place-content: center;
+  box-sizing: border-box;
+  background: rgba(24, 24, 24, 0.72);
+  color: #f3f3ef;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.portal-loading-card p { margin: 0; }
+
+.modern-empty-state {
+  min-height: 220px;
+  background: rgba(24, 24, 24, 0.72);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f3f3ef;
+}
+
+.modern-empty-state h2 { color: #f3f3ef; }
+.modern-empty-state p { color: #c7c7c1; }
+
 .active-job-total-card,
 .active-job-count-card {
   border-color: rgba(255, 255, 255, 0.1);
