@@ -10,18 +10,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext(options =>
+builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseMySQL(
         builder.Configuration.GetConnectionString("DefaultConnection")!
     )
 );
 
-builder.Services.AddScoped();
-builder.Services.AddScoped();
-builder.Services.AddSingleton();
-builder.Services.AddScoped();
-builder.Services.AddSingleton();
-builder.Services.AddHostedService();
+builder.Services.AddScoped<ISparePartService, SparePartService>();
+builder.Services.AddScoped<IPartRequestService, PartRequestService>();
+builder.Services.AddSingleton<ILowStockEventPublisher, LowStockEventPublisher>();
+builder.Services.AddScoped<IJobCardGateway, JobCardGateway>();
+builder.Services.AddSingleton<IPartIssuedEventPublisher, PartIssuedEventPublisher>();
+builder.Services.AddHostedService<PartRequestedConsumer>();
 builder.Services.AddHttpClient("JobMaintenanceService", client =>
 {
     var baseUrl = builder.Configuration["JobMaintenanceService:BaseUrl"]
@@ -82,7 +82,7 @@ var app = builder.Build();
 // ======================================================
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService();
+    var dbContext = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
     dbContext.Database.Migrate();
 }
 
