@@ -1,11 +1,15 @@
 using BillingService.Data;
 using BillingService.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ======================================================
+// DATABASE
+// ======================================================
 
 builder.Services.AddDbContext<BillingDbContext>(options =>
     options.UseMySQL(
@@ -17,53 +21,66 @@ builder.Services.AddDbContext<BillingDbContext>(options =>
 // BACKGROUND CONSUMERS
 // ======================================================
 
-builder.Services.AddHostedService<BillingService.Services.PartIssuedConsumer>();
+builder.Services.AddHostedService<PartIssuedConsumer>();
 
-builder.Services.AddHostedService<BillingService.Services.ServiceCompletedConsumer>();
+builder.Services.AddHostedService<ServiceCompletedConsumer>();
 
 // ======================================================
 // BILLING SERVICES
 // ======================================================
 
-builder.Services.AddScoped<
-    BillingService.Services.IInvoiceService,
-    BillingService.Services.InvoiceService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 
 builder.Services.AddScoped<
-    BillingService.Services.IInvoiceEventPublisher,
-    BillingService.Services.InvoiceEventPublisher>();
+    IInvoiceEventPublisher,
+    InvoiceEventPublisher>();
 
 builder.Services.AddScoped<
-    BillingService.Services.IPaymentService,
-    BillingService.Services.PaymentService>();
+    IPaymentService,
+    PaymentService>();
 
 // ======================================================
 // JWT AUTHENTICATION
 // ======================================================
 
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("Jwt:Key is missing.");
+var jwtKey = builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key is missing. Configure it with user secrets or environment variables."
+    );
+}
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
 
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                ValidAudience = builder.Configuration["Jwt:Audience"],
 
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)
-            ),
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtKey)
+                    ),
 
-            ClockSkew = TimeSpan.Zero
-        };
+                ClockSkew = TimeSpan.Zero
+            };
     });
 
 builder.Services.AddAuthorization();
@@ -74,11 +91,10 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 // ======================================================
-// CORS FOR REACT & AZURE FRONTEND
+// CORS
 // ======================================================
 
 builder.Services.AddCors(options =>
@@ -99,19 +115,37 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ======================================================
-// AUTOMATIC MIGRATION / TABLE CREATION ON STARTUP
+// DATABASE MIGRATION
+// SAFE MODE
 // ======================================================
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider
-        .GetRequiredService<BillingDbContext>();
+    try
+    {
+        var dbContext =
+            scope.ServiceProvider
+                .GetRequiredService<BillingDbContext>();
 
-    dbContext.Database.Migrate();
+        dbContext.Database.Migrate();
+
+        Console.WriteLine(
+            "Billing database migrations applied successfully."
+        );
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(
+            $"Billing database migration warning: {ex.Message}"
+        );
+
+        // Do not crash the whole application
+        // if migration fails.
+    }
 }
 
 // ======================================================
-// HTTP REQUEST PIPELINE
+// HTTP PIPELINE
 // ======================================================
 
 if (app.Environment.IsDevelopment())
