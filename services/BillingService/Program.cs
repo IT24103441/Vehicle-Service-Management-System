@@ -6,16 +6,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<BillingDbContext>(options =>
+builder.Services.AddDbContext(options =>
     options.UseMySQL(
         builder.Configuration.GetConnectionString("DefaultConnection")!
     )
 );
-builder.Services.AddHostedService<BillingService.Services.PartIssuedConsumer>();
-builder.Services.AddHostedService<BillingService.Services.ServiceCompletedConsumer>();
-builder.Services.AddScoped<BillingService.Services.IInvoiceService, BillingService.Services.InvoiceService>();
-builder.Services.AddScoped<BillingService.Services.IInvoiceEventPublisher, BillingService.Services.InvoiceEventPublisher>();
-builder.Services.AddScoped<BillingService.Services.IPaymentService, BillingService.Services.PaymentService>();
+builder.Services.AddHostedService();
+builder.Services.AddHostedService();
+builder.Services.AddScoped();
+builder.Services.AddScoped();
+builder.Services.AddScoped();
 var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing.");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true, ValidIssuer = builder.Configuration["Jwt:Issuer"], ValidAudience = builder.Configuration["Jwt:Audience"], IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), ClockSkew = TimeSpan.Zero });
 builder.Services.AddAuthorization();
@@ -41,8 +41,15 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// ======================================================
+// AUTOMATIC MIGRATION / TABLE CREATION ON STARTUP
+// ======================================================
 using (var scope = app.Services.CreateScope())
-    await scope.ServiceProvider.GetRequiredService<BillingDbContext>().Database.MigrateAsync();
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<BillingDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
