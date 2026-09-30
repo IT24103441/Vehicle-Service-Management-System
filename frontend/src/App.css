@@ -5112,28 +5112,28 @@ body {
 
 .portal-primary-button,
 .active-job-action {
-  background: linear-gradient(135deg, #ffac32, #ec850e);
+  background: linear-gradient(135deg, #ffd080, #f0a83e);
   color: #17120a;
-  box-shadow: 0 8px 18px rgba(255, 159, 28, 0.2);
+  box-shadow: 0 8px 18px rgba(255, 190, 92, 0.18);
 }
 
 .portal-primary-button:hover,
 .active-job-action:hover {
-  background: linear-gradient(135deg, #ffc15c, #ff9210);
-  box-shadow: 0 12px 24px rgba(255, 159, 28, 0.3);
+  background: linear-gradient(135deg, #ffe0a6, #f6b955);
+  box-shadow: 0 12px 24px rgba(255, 190, 92, 0.28);
 }
 
 .portal-secondary-button,
 .secondary-button {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(8, 8, 8, 0.42);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
   color: #f7f7f4;
 }
 
 .portal-secondary-button:hover,
 .secondary-button:hover {
   border-color: var(--dashboard-amber);
-  background: rgba(255, 159, 28, 0.13);
+  background: rgba(255, 190, 92, 0.2);
   color: var(--dashboard-amber-light);
 }
 
