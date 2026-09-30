@@ -9,7 +9,7 @@ namespace BillingService.Controllers;
 [ApiController]
 [Route("api/invoices")]
 [Authorize]
-public class InvoicesController(IInvoiceService invoices) : ControllerBase
+public class InvoicesController(IInvoiceService invoices, IPaymentService payments) : ControllerBase
 {
     [HttpGet("eligible-jobs")]
     [Authorize(Roles = "Accounts,Administrator")]
@@ -20,6 +20,20 @@ public class InvoicesController(IInvoiceService invoices) : ControllerBase
     public async Task<ActionResult<InvoiceResponseDto>> Generate(int jobCardId, CancellationToken ct)
     {
         try { return Ok(await invoices.GenerateAsync(jobCardId, ct)); }
+        catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpPost("{invoiceId:int}/payments")]
+    [Authorize(Roles = "Accounts,Administrator")]
+    public async Task<ActionResult<InvoiceResponseDto>> RecordPayment(int invoiceId, RecordPaymentDto dto, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        try
+        {
+            var recordedBy = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "Accounts";
+            return Ok(await payments.RecordAsync(invoiceId, dto, recordedBy, ct));
+        }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
         catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
     }
 

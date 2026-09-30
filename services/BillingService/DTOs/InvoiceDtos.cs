@@ -21,8 +21,29 @@ public class InvoiceResponseDto
     public bool IsBillingEligible { get; set; }
     public bool IsGenerated { get; set; }
     public decimal TotalAmount { get; set; }
+    public decimal AmountPaid { get; set; }
+    public decimal RemainingBalance { get; set; }
+    public string PaymentStatus { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public List<ChargeLineResponseDto> ChargeLines { get; set; } = [];
+    public List<PaymentResponseDto> Payments { get; set; } = [];
+}
+
+public class RecordPaymentDto
+{
+    [Range(typeof(decimal), "0.01", "999999999")] public decimal Amount { get; set; }
+    public DateTime? PaymentDate { get; set; }
+    [Required, MaxLength(100)] public string ReferenceNumber { get; set; } = string.Empty;
+}
+
+public class PaymentResponseDto
+{
+    public int Id { get; set; }
+    public int InvoiceId { get; set; }
+    public decimal Amount { get; set; }
+    public DateTime PaymentDate { get; set; }
+    public string ReferenceNumber { get; set; } = string.Empty;
+    public string CreatedBy { get; set; } = string.Empty;
 }
 
 public class ChargeLineResponseDto

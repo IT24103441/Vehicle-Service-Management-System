@@ -37,6 +37,7 @@ import SparePartsPage from './pages/SparePartsPage'
 import PartRequestPage from './pages/PartRequestPage'
 import InventoryPartRequestsPage from './pages/InventoryPartRequestsPage'
 import InventoryStockReportPage from './pages/InventoryStockReportPage'
+import InventoryDashboardPage from './pages/InventoryDashboardPage'
 import BillingChargesPage from './pages/BillingChargesPage'
 import InvoicesPage from './pages/InvoicesPage'
 import MyInvoicesPage from './pages/MyInvoicesPage'
@@ -52,7 +53,7 @@ function HomeRedirect() {
   }
 
   if (role === 'InventoryOfficer') {
-    return <Navigate to="/inventory/spare-parts" replace />
+    return <Navigate to="/inventory/dashboard" replace />
   }
 
   if (role === 'Accounts') {
@@ -95,6 +96,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/inventory/dashboard" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryDashboardPage /></ProtectedRoute>} />
       <Route path="/inventory/part-requests" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryPartRequestsPage /></ProtectedRoute>} />
       <Route path="/inventory/stock-report" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryStockReportPage /></ProtectedRoute>} />
       <Route path="/inventory/low-stock-report" element={<ProtectedRoute roles={['InventoryOfficer', 'Administrator']}><InventoryStockReportPage lowStockOnly /></ProtectedRoute>} />
