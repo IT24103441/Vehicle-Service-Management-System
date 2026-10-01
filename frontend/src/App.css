@@ -120,3 +120,26 @@
 @media(max-width:1080px){.customer-account-hero{grid-template-columns:minmax(0,1fr);background-position:62% center}.customer-account-summary{width:min(100%,310px)}}
 @media(max-width:620px){.customer-account-hero{min-height:480px;padding:32px 24px;background-image:linear-gradient(180deg,rgba(10,15,19,.94) 0%,rgba(10,15,19,.8) 58%,rgba(10,15,19,.55) 100%),url("./assets/customer-portal-hero.png");background-position:67% center}.customer-account-copy>h2{font-size:36px}.customer-account-summary{min-width:0}.customer-section-heading{align-items:flex-start;flex-direction:column;gap:8px}}
 @media(prefers-reduced-motion:reduce){.customer-content>*,.customer-portal *{animation:none!important;scroll-behavior:auto!important;transition-duration:.01ms!important}.customer-portal-sidebar .sidebar-link:hover,.customer-action-card:hover,.customer-portal .modern-vehicle-card:hover,.customer-portal .modern-booking-card:hover,.customer-invoice-row:hover{transform:none}}
+/* Administrator interaction motion */
+.admin-portal .portal-topbar{animation:adminHeaderEnter .34s cubic-bezier(.2,.72,.25,1) both}
+.admin-portal .admin-content{animation:adminPanelEnter .4s cubic-bezier(.2,.72,.25,1) both}
+.admin-portal .admin-content>*{animation:adminItemEnter .4s cubic-bezier(.2,.72,.25,1) both}
+.admin-portal .admin-content>*:nth-child(2){animation-delay:.045s}
+.admin-portal .admin-content>*:nth-child(3){animation-delay:.085s}
+.admin-portal .admin-content>*:nth-child(4){animation-delay:.125s}
+.admin-sidebar .sidebar-link{transition:color .18s ease,background-color .18s ease,transform .18s ease}
+.admin-sidebar .sidebar-link:hover{transform:translateX(2px)}
+.admin-portal button,.admin-portal input,.admin-portal select{transition:color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.admin-portal button:active{transform:translateY(1px) scale(.99)}
+.admin-portal :focus-visible{outline:3px solid rgba(235,10,30,.2);outline-offset:3px}
+.admin-portal .metric-tile,.admin-portal .admin-account-summary,.admin-portal .admin-role-panel,.admin-portal .role-allocation-item{transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.admin-portal .metric-tile:hover,.admin-portal .role-allocation-item:hover{border-color:#c9cdd1;box-shadow:0 12px 28px rgba(22,28,34,.075);transform:translateY(-2px)}
+.admin-portal .portal-table tbody tr{transition:background-color .16s ease}
+.admin-portal .modal-backdrop{animation:adminFadeIn .18s ease both}
+.admin-portal .modal-card{animation:adminModalEnter .26s cubic-bezier(.2,.72,.25,1) both}
+@keyframes adminHeaderEnter{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes adminPanelEnter{from{opacity:0}to{opacity:1}}
+@keyframes adminItemEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes adminFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes adminModalEnter{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.admin-portal *{animation:none!important;transition-duration:.01ms!important}.admin-sidebar .sidebar-link:hover,.admin-portal .metric-tile:hover,.admin-portal .role-allocation-item:hover{transform:none}}
