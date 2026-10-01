@@ -196,7 +196,7 @@ function AdministratorPage() {
   ]
 
   return (
-    <div className="portal-layout">
+    <div className="portal-layout admin-portal">
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="portal-main">
@@ -230,7 +230,7 @@ function AdministratorPage() {
           }
         />
 
-        <div className="portal-content admin-content">
+        <div className="portal-content admin-content" key={activeTab}>
         {/* Notifications */}        {error && (
           <div className="portal-error" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <AlertCircle size={20} /> {error}
