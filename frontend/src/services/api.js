@@ -27,15 +27,24 @@ const SERVICE_NAMES = {
   [NOTIFICATION_API]: 'Notification service',
 }
 
-async function serviceFetch(url, options) {
+async function serviceFetch(url, options = {}) {
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), 15000)
+  const abortFromCaller = () => controller.abort()
+  options.signal?.addEventListener('abort', abortFromCaller, { once: true })
   try {
-    return await window.fetch(url, options)
+    return await window.fetch(url, { ...options, signal: controller.signal })
   } catch (cause) {
     const baseUrl = Object.keys(SERVICE_NAMES).find((base) => url.startsWith(base))
-    const error = new Error(`${SERVICE_NAMES[baseUrl] || 'Requested service'} is not available. Please try again.`)
+    const serviceName = SERVICE_NAMES[baseUrl] || 'Requested service'
+    const message = cause?.name === 'AbortError' ? `${serviceName} took too long to respond. Please try again.` : `${serviceName} is not available. Please try again.`
+    const error = new Error(message)
     error.cause = cause
     error.isNetworkError = true
     throw error
+  } finally {
+    window.clearTimeout(timeoutId)
+    options.signal?.removeEventListener('abort', abortFromCaller)
   }
 }
 

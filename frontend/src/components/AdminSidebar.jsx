@@ -35,7 +35,7 @@ function AdminSidebar({ activeTab, setActiveTab }) {
   }
 
   return (
-    <aside className="customer-sidebar">
+    <aside className="customer-sidebar admin-sidebar">
       <div>
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">
