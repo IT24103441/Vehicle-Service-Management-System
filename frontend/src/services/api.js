@@ -1,23 +1,43 @@
 const CUSTOMER_BOOKING_API =
   import.meta.env.VITE_API_BASE_URL ||
-  'https://vcs-customerbooking-service-gbcpfsfecdcqayda.eastasia-01.azurewebsites.net'
+  'http://localhost:5001'
 
 const JOB_MAINTENANCE_API =
   import.meta.env.VITE_JOB_MAINTENANCE_API_BASE_URL ||
-  'https://vcs-jobmaintenance-service-deatcramh9e5g2ea.eastasia-01.azurewebsites.net'
+  'http://localhost:5002'
 
 const BILLING_API =
   import.meta.env.VITE_BILLING_API_BASE_URL ||
-  'https://vcs-billing-service-dkc8cjbccpcuejaz.eastasia-01.azurewebsites.net'
+  'http://localhost:5004'
 
 const INVENTORY_API =
   import.meta.env.VITE_INVENTORY_API_BASE_URL ||
-  'https://vcs-inventory-service-g8gfdqhwb6d4hsdy.eastasia-01.azurewebsites.net'
+  'http://localhost:5003'
 
 const NOTIFICATION_API =
   import.meta.env.VITE_NOTIFICATION_API_BASE_URL ||
-  'https://vcs-notification-service-cnd8ejgzbfanded7.eastasia-01.azurewebsites.net'
+  'http://localhost:5005'
 
+
+const SERVICE_NAMES = {
+  [CUSTOMER_BOOKING_API]: 'Customer and booking service',
+  [JOB_MAINTENANCE_API]: 'Job and maintenance service',
+  [INVENTORY_API]: 'Inventory service',
+  [BILLING_API]: 'Billing service',
+  [NOTIFICATION_API]: 'Notification service',
+}
+
+async function serviceFetch(url, options) {
+  try {
+    return await window.fetch(url, options)
+  } catch (cause) {
+    const baseUrl = Object.keys(SERVICE_NAMES).find((base) => url.startsWith(base))
+    const error = new Error(`${SERVICE_NAMES[baseUrl] || 'Requested service'} is not available. Please try again.`)
+    error.cause = cause
+    error.isNetworkError = true
+    throw error
+  }
+}
 
 export function getToken() {
   return localStorage.getItem('token')
@@ -80,7 +100,7 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(
+  const response = await serviceFetch(
     `${CUSTOMER_BOOKING_API}${path}`,
     {
       ...options,
@@ -126,7 +146,7 @@ async function jobMaintenanceRequest(path, options = {}) {
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(
+  const response = await serviceFetch(
     `${JOB_MAINTENANCE_API}${path}`,
     {
       ...options,
@@ -170,7 +190,7 @@ async function inventoryRequest(path, options = {}) {
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(`${INVENTORY_API}${path}`, {
+  const response = await serviceFetch(`${INVENTORY_API}${path}`, {
     ...options,
     headers,
   })
@@ -190,9 +210,14 @@ async function inventoryRequest(path, options = {}) {
 
 async function billingRequest(path, options = {}) {
   const token = getToken()
-  const response = await fetch(`${BILLING_API}${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers || {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) } })
+  const response = await serviceFetch(`${BILLING_API}${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers || {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) } })
   const data = await response.json().catch(() => null)
-  if (!response.ok) throw new Error(data?.message || data?.detail || data?.title || `Request failed with status ${response.status}`)
+  if (!response.ok) {
+    const error = new Error(data?.message || data?.detail || data?.title || `Request failed with status ${response.status}`)
+    error.status = response.status
+    error.data = data
+    throw error
+  }
   return data
 }
 
@@ -232,6 +257,10 @@ export const authApi = {
 
   me() {
     return request('/api/auth/me')
+  },
+
+  refresh() {
+    return request('/api/auth/refresh', { method: 'POST' })
   },
 }
 
@@ -621,7 +650,7 @@ export const jobPartRequestApi = {
 }
 
 export const partChargeApi = {
-  getByJob(jobCardId) { return fetch(`${BILLING_API}/api/part-charges/job/${jobCardId}`, { headers: { Authorization: getToken() ? `Bearer ${getToken()}` : '' } }).then(async response => { const data = await response.json().catch(() => null); if (!response.ok) throw new Error(data?.message || `Request failed with status ${response.status}`); return data }) },
+  getByJob(jobCardId) { return serviceFetch(`${BILLING_API}/api/part-charges/job/${jobCardId}`, { headers: { Authorization: getToken() ? `Bearer ${getToken()}` : '' } }).then(async response => { const data = await response.json().catch(() => null); if (!response.ok) throw new Error(data?.message || `Request failed with status ${response.status}`); return data }) },
   getInvoice(jobCardId) { return billingRequest(`/api/part-charges/invoice/job/${jobCardId}`) },
   addService(jobCardId, data) { return billingRequest(`/api/part-charges/invoice/job/${jobCardId}/service`, { method: 'POST', body: JSON.stringify(data) }) },
   addLabour(jobCardId, data) { return billingRequest(`/api/part-charges/invoice/job/${jobCardId}/labour`, { method: 'POST', body: JSON.stringify(data) }) },
