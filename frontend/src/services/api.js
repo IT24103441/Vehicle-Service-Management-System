@@ -28,12 +28,13 @@ const SERVICE_NAMES = {
 }
 
 async function serviceFetch(url, options = {}) {
+  const { timeoutMs = 15000, signal, ...fetchOptions } = options
   const controller = new AbortController()
-  const timeoutId = window.setTimeout(() => controller.abort(), 15000)
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs)
   const abortFromCaller = () => controller.abort()
-  options.signal?.addEventListener('abort', abortFromCaller, { once: true })
+  signal?.addEventListener('abort', abortFromCaller, { once: true })
   try {
-    return await window.fetch(url, { ...options, signal: controller.signal })
+    return await window.fetch(url, { ...fetchOptions, signal: controller.signal })
   } catch (cause) {
     const baseUrl = Object.keys(SERVICE_NAMES).find((base) => url.startsWith(base))
     const serviceName = SERVICE_NAMES[baseUrl] || 'Requested service'
@@ -44,7 +45,7 @@ async function serviceFetch(url, options = {}) {
     throw error
   } finally {
     window.clearTimeout(timeoutId)
-    options.signal?.removeEventListener('abort', abortFromCaller)
+    signal?.removeEventListener('abort', abortFromCaller)
   }
 }
 
@@ -240,6 +241,7 @@ export const authApi = {
   register(email, password, role = 'Customer') {
     return request('/api/auth/register', {
       method: 'POST',
+      timeoutMs: 30000,
       body: JSON.stringify({
         email,
         password,
@@ -251,6 +253,7 @@ export const authApi = {
   login(email, password) {
     return request('/api/auth/login', {
       method: 'POST',
+      timeoutMs: 30000,
       body: JSON.stringify({
         email,
         password,
